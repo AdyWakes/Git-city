@@ -258,8 +258,9 @@ export async function exportVideo(app: App, hooks: ExportHooks, opts: { w?: numb
     });
     rec.stop();
     await stopped;
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    download(blob, `gitcity-${slug(app.data.repo.name)}-timelapse.webm`);
+    const type = rec.mimeType || mimeType || 'video/webm';
+    const blob = new Blob(chunks, { type });
+    download(blob, `gitcity-${slug(app.data.repo.name)}-timelapse.${type.includes('mp4') ? 'mp4' : 'webm'}`);
   } finally {
     if (rec.state !== 'inactive') rec.stop();
     stream.getTracks().forEach((t) => t.stop());

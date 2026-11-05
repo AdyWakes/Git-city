@@ -84,6 +84,9 @@ export class GitLogParser {
     num: Map<string, NumEntry>;
   } | null = null;
   private pending: Pending = { kind: 'none' };
+  /** Set while reading the path of a raw entry that must be ignored (submodules). */
+  private skipNext = false;
+  private skipped = new Set<string>();
   /** Number of commits emitted so far. */
   count = 0;
 
@@ -117,13 +120,19 @@ export class GitLogParser {
       this.pending = { kind: 'none' };
       switch (p.kind) {
         case 'raw1':
-          this.current?.raw.push({ status: p.status, path: tok });
+          if (this.skipNext) {
+            this.skipNext = false;
+            this.skipped.add(tok);
+          } else this.current?.raw.push({ status: p.status, path: tok });
           return;
         case 'raw2a':
           this.pending = { kind: 'raw2b', status: p.status, oldPath: tok };
           return;
         case 'raw2b':
-          this.current?.raw.push({ status: p.status, path: tok, oldPath: p.oldPath });
+          if (this.skipNext) {
+            this.skipNext = false;
+            this.skipped.add(tok);
+          } else this.current?.raw.push({ status: p.status, path: tok, oldPath: p.oldPath });
           return;
         case 'num2a':
           this.pending = { kind: 'num2b', added: p.added, deleted: p.deleted, binary: p.binary, oldPath: tok };
@@ -158,7 +167,10 @@ export class GitLogParser {
       // ":100644 100644 <sha> <sha> M" (status may carry a score: R087)
       const sp = t.lastIndexOf(' ');
       const status = (t.charAt(sp + 1) || 'M') as ChangeStatus;
+      // Submodules (gitlinks, mode 160000) are not files: consume their path(s) and drop them.
+      const gitlink = t.startsWith(':160000') || t.slice(8, 14) === '160000';
       this.pending = status === 'R' || status === 'C' ? { kind: 'raw2a', status } : { kind: 'raw1', status };
+      if (gitlink) this.skipNext = true;
       return;
     }
 
@@ -200,9 +212,10 @@ export class GitLogParser {
     }
     // Numstat entries without a raw counterpart (should not happen, but be lenient).
     for (const [path, n] of c.num) {
-      if (seen.has(path)) continue;
+      if (seen.has(path) || this.skipped.has(path)) continue;
       changes.push({ path, status: 'M', added: n.added, deleted: n.deleted, binary: n.binary });
     }
+    this.skipped.clear();
     this.count++;
     this.onCommit({ hash: c.hash, time: c.time, author: c.author, email: c.email, changes });
   }

@@ -52,6 +52,12 @@ describe('GitLogParser', () => {
     expect(commits[0].changes[0]).toMatchObject({ path: weird, added: 4 });
   });
 
+  test('drops submodules (gitlinks)', () => {
+    const sub = `\n:000000 160000 ${'0'.repeat(40)} ${'c'.repeat(40)} A\0vendor/lib\0`;
+    const commits = parseGitLog(H('c1', 1) + sub + RAW('A', 'a.c') + NUM(1, 0, 'vendor/lib') + NUM(5, 0, 'a.c'));
+    expect(commits[0].changes.map((c) => c.path)).toEqual(['a.c']);
+  });
+
   test('handles an empty stream (repo without commits)', () => {
     expect(parseGitLog('')).toEqual([]);
   });

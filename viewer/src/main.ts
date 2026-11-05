@@ -123,6 +123,8 @@ function start(data: CityData) {
   let pinned = -1;
   let downAt: { x: number; y: number; t: number } | null = null;
   let idleSince = performance.now();
+  const lastPick = { x: -1, y: -1, cam: '' };
+  let tipKey = '';
 
   const pickAt = (x: number, y: number) => {
     const r = canvas.getBoundingClientRect();
@@ -204,6 +206,19 @@ function start(data: CityData) {
       tip.classList.remove('on');
       return;
     }
+    const key = `${bi}:${city.currentLines(bi)}:${city.isLot(bi)}`;
+    if (key !== tipKey) {
+      tipKey = key;
+      renderTip(bi);
+    }
+    tip.classList.add('on');
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const px = x + 18 + tw > innerWidth ? x - tw - 14 : x + 18;
+    const py = y + 18 + th > innerHeight ? y - th - 12 : y + 18;
+    tip.style.transform = `translate(${px}px, ${py}px)`;
+  };
+
+  const renderTip = (bi: number) => {
     const b = data.b;
     const path = b.path[bi];
     const slash = path.lastIndexOf('/');
@@ -217,11 +232,6 @@ function start(data: CityData) {
         data.authors[b.author[bi]] ? ` · top author <b>${esc(data.authors[b.author[bi]].name)}</b>` : ''
       }</div>
       ${gone ? `<div class="t-gone">Deleted ${fmtMonth(data.ticks.t[b.died[bi]])}</div>` : ''}`;
-    tip.classList.add('on');
-    const tw = tip.offsetWidth, th = tip.offsetHeight;
-    const px = x + 18 + tw > innerWidth ? x - tw - 14 : x + 18;
-    const py = y + 18 + th > innerHeight ? y - th - 12 : y + 18;
-    tip.style.transform = `translate(${px}px, ${py}px)`;
   };
 
   // Frame loop --------------------------------------------------------------------------------
@@ -246,7 +256,13 @@ function start(data: CityData) {
     city.update(dt, now / 1000);
     walkers.update(dt);
 
-    if (pointer && !stage.flying) {
+    // Picking is cheap (~0.5ms for 20k) but skip it when nothing that affects it changed.
+    const camKey = stage.camera.matrixWorld.elements.join(',');
+    const needPick = pointer && (pointer.x !== lastPick.x || pointer.y !== lastPick.y || camKey !== lastPick.cam || timeline.playing);
+    if (pointer && !stage.flying && needPick) {
+      lastPick.x = pointer.x;
+      lastPick.y = pointer.y;
+      lastPick.cam = camKey;
       const { bi, di } = pickAt(pointer.x, pointer.y);
       if (bi !== hovered) {
         hovered = bi;

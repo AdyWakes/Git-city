@@ -105,6 +105,7 @@ button { cursor: pointer; }
   background: linear-gradient(to top, rgba(5, 6, 12, 0.92), rgba(5, 6, 12, 0.6) 60%, transparent);
 }
 .play { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; box-shadow: 0 0 24px rgba(255, 79, 139, 0.45); }
+.play:disabled { opacity: 0.35; box-shadow: none; cursor: default; }
 .play svg { width: 18px; height: 18px; }
 .date { min-width: 128px; }
 .date strong { display: block; font-size: 22px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.1; }
@@ -132,7 +133,7 @@ button { cursor: pointer; }
   .brand { top: 14px; left: 16px; }
   .brand h1 { font-size: 22px; }
   .brand p { font-size: 13px; }
-  .tools { top: auto; bottom: 96px; right: 12px; left: 12px; }
+  .tools { top: auto; bottom: 146px; right: 12px; left: 12px; }
   .search { flex: 1; width: auto; }
   .legend, .hint { display: none; }
   .timeline { padding: 16px 12px 14px; gap: 10px; grid-template-columns: auto 1fr; }

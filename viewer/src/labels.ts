@@ -8,6 +8,7 @@ const MAX_LABELS = 12;
 /** Neon-sign style district names floating over each district's skyline. */
 export class Labels {
   private els: HTMLElement[] = [];
+  private widths: number[] = [];
   private order: number[];
   private anchors: THREE.Vector3[];
   private v = new THREE.Vector3();
@@ -44,10 +45,20 @@ export class Labels {
     }
   }
 
+  private chrome: DOMRect[] = [];
+  private chromeAge = 0;
+
   update(): void {
     const cam = this.stage.camera;
     const { w, h } = this.stage.size;
     this.boxes.length = 0;
+    // UI rectangles labels must stay clear of (refreshed a few times per second).
+    if (this.chromeAge-- <= 0) {
+      this.chromeAge = 20;
+      this.chrome = [...document.querySelectorAll('.brand, .tools, .timeline, .legend')]
+        .map((e) => e.getBoundingClientRect())
+        .filter((r) => r.width > 0);
+    }
     let shown = 0;
     for (const di of this.order) {
       const el = this.els[di];
@@ -62,10 +73,10 @@ export class Labels {
       }
       const x = (p.x * 0.5 + 0.5) * w;
       const y = (-p.y * 0.5 + 0.5) * h;
-      const lw = el.offsetWidth || 80;
+      // Measured once: reading offsetWidth after style writes would force a reflow per label.
+      const lw = (this.widths[di] ||= el.offsetWidth || 80);
       const box = { x0: x - lw / 2 - 6, y0: y - 24, x1: x + lw / 2 + 6, y1: y };
-      // Keep clear of the header and the timeline.
-      const inChrome = y < 150 || y > h - 120;
+      const inChrome = this.chrome.some((r) => box.x0 < r.right && box.x1 > r.left && box.y0 < r.bottom && box.y1 > r.top);
       if (inChrome || this.boxes.some((b) => box.x0 < b.x1 && box.x1 > b.x0 && box.y0 < b.y1 && box.y1 > b.y0)) {
         el.style.opacity = '0';
         el.style.visibility = 'hidden';

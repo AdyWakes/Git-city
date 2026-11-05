@@ -42,8 +42,8 @@ export async function serve(opts: ServeOptions): Promise<{ server: Server; url: 
         return;
       }
       if (path === '/manifest.json') {
-        // The CLI never serves a demo manifest; answer fast so the viewer falls back to /city.json.
-        res.writeHead(404).end();
+        // No demo manifest in CLI mode: an empty list makes the viewer load /city.json.
+        res.writeHead(200, { 'content-type': TYPES['.json'] }).end('{"repos":[]}');
         return;
       }
       if (path.endsWith('/')) path += 'index.html';

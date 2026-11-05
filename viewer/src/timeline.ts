@@ -33,6 +33,7 @@ export class TimelineUI {
     const sig = { signal: this.abort.signal };
     const scrub = $('scrub');
 
+    ($('play') as HTMLButtonElement).disabled = data.stats.commits === 0;
     $('play').addEventListener('click', () => this.toggle(), sig);
     let dragging = false;
     const seekAt = (e: PointerEvent) => {
@@ -79,6 +80,7 @@ export class TimelineUI {
   }
 
   toggle(force?: boolean) {
+    if (this.data.stats.commits === 0) return;
     this.playing = force ?? !this.playing;
     if (this.playing && this.progress >= 1) this.setProgress(0, true);
     this.icon.innerHTML = this.playing ? PAUSE : PLAY;
