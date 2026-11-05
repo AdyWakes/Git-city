@@ -198,7 +198,7 @@ export class TimelineUI {
       g.fillStyle = 'rgba(244,239,230,0.55)';
       g.fillText(String(y.year), x + 3, base + 2);
     }
-    this.head.style.left = `${played}px`;
+    this.head.style.left = `${Math.min(played, w - 2)}px`;
   }
 
   dispose() {

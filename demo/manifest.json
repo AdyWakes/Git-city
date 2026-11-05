@@ -1,0 +1,28 @@
+{
+  "repos": [
+    {
+      "id": "react",
+      "name": "facebook/react",
+      "file": "data/react.json",
+      "description": "The library for web and native user interfaces"
+    },
+    {
+      "id": "vue",
+      "name": "vuejs/core",
+      "file": "data/vue.json",
+      "description": "Vue.js 3: the progressive JavaScript framework"
+    },
+    {
+      "id": "redis",
+      "name": "redis/redis",
+      "file": "data/redis.json",
+      "description": "The in-memory data store, in C"
+    },
+    {
+      "id": "flask",
+      "name": "pallets/flask",
+      "file": "data/flask.json",
+      "description": "The Python micro framework for building web applications"
+    }
+  ]
+}

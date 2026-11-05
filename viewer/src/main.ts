@@ -34,6 +34,10 @@ async function boot() {
   if (manifest && manifest.repos.length) {
     const nav = $('demo-switch');
     nav.hidden = false;
+    $('cta').hidden = false;
+    $('cta-copy').onclick = () => {
+      navigator.clipboard?.writeText('npx gitcity').then(() => toast('Copied: npx gitcity'), () => {});
+    };
     const wanted = params.get('repo') ?? manifest.repos[0].id;
     const pick = (id: string) => {
       const r = manifest.repos.find((x) => x.id === id) ?? manifest.repos[0];

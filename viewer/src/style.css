@@ -36,6 +36,11 @@ button { cursor: pointer; }
 .demo-switch button:hover { color: var(--ink); }
 .demo-switch button[aria-current='true'] { color: var(--ink); border-bottom-color: var(--accent); }
 
+.cta { margin-top: 14px !important; }
+.cta button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 3px 9px; margin-left: 4px; }
+.cta button:hover { border-color: var(--accent); }
+.cta code { font: 500 14px var(--mono); color: var(--ink); }
+
 /* Tools: search + export --------------------------------------------------------------- */
 .tools { position: fixed; top: 20px; right: 22px; display: flex; gap: 10px; align-items: flex-start; }
 .search { position: relative; width: 300px; }

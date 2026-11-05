@@ -3,7 +3,7 @@ import type { CityData } from './data';
 import type { CityView } from './city';
 import type { Stage } from './stage';
 
-const MAX_LABELS = 16;
+const MAX_LABELS = 12;
 
 /** Neon-sign style district names floating over each district's skyline. */
 export class Labels {

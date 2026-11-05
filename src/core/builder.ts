@@ -189,7 +189,7 @@ export class CityBuilder {
       .filter((f) => f.died !== -1 && !f.binary && f.peak > 0)
       .sort((a, b) => b.peak - a.peak || byPath(a, b))
       // Lots are a memory, not the city: never more than half as many lots as buildings.
-      .slice(0, Math.min(maxLots, Math.max(8, Math.ceil(selected.length * 0.5))));
+      .slice(0, Math.min(maxLots, Math.max(8, Math.ceil(selected.length * 0.2))));
     const chosen = [...selected, ...lots];
 
     // Districts: top-level folders. A folder holding more than half of the city is split into
@@ -234,8 +234,9 @@ export class CityBuilder {
     chosen.forEach((f, i) => local.set(f.id, i));
     chosen.forEach((f, i) => {
       const g = groups[districtIndex.get(districtOf(f.path))!];
-      const weight = f.died === -1 ? f.lines : f.peak;
-      g.weight += weight;
+      // Lots go after every live building, so districts keep a living core and an abandoned edge.
+      const weight = f.died === -1 ? f.lines : -1 / (1 + f.peak);
+      if (f.died === -1) g.weight += f.lines;
       g.items.push({ id: i, k: footprintCells(f.commits), weight, key: f.path });
     });
     const layout = layoutCity(groups);

@@ -96,7 +96,7 @@ export function createBuildingMaterial(): THREE.ShaderMaterial {
           // Roof: dark, with a neon rim on landmark towers.
           vec2 q = abs(vLocal.xz) / (vSize.x * 0.5);
           float rim = smoothstep(0.88, 0.97, max(q.x, q.y));
-          col = base * 0.03 + vec3(0.0025, 0.0027, 0.0042);
+          col = base * 0.055 + vec3(0.0025, 0.0027, 0.0042);
           col += base * rim * (0.02 + vInfo.y * 2.2);
           col += uAccent * hi * (0.15 + rim * 1.6);
         } else {
@@ -107,7 +107,7 @@ export function createBuildingMaterial(): THREE.ShaderMaterial {
           float moon = 0.45 + 0.55 * max(dot(n, normalize(vec3(-0.6, 0.0, -0.4))), 0.0);
           float ground = smoothstep(0.0, 3.0, v);
           float up = v / max(vSize.y, 0.001);
-          col = base * (0.02 + 0.03 * ground + 0.035 * up) * moon + vec3(0.0012, 0.0015, 0.003);
+          col = base * (0.012 + 0.016 * ground + 0.02 * up) * moon + vec3(0.0012, 0.0015, 0.003);
 
           // Window grid.
           float cols = max(1.0, floor(vSize.x / COL_W));
@@ -130,13 +130,15 @@ export function createBuildingMaterial(): THREE.ShaderMaterial {
 
           // Analytic AA / LOD: when a window is smaller than ~2px, blend to the facade average.
           vec2 fw = fwidth(cell);
-          float lod = smoothstep(0.2, 0.5, max(fw.x, fw.y));
+          float lod = smoothstep(0.45, 0.95, max(fw.x, fw.y));
           vec2 win = smoothstep(vec2(0.18, 0.22) - fw, vec2(0.18, 0.22) + fw, f) *
                      (1.0 - smoothstep(vec2(0.82, 0.78) - fw, vec2(0.82, 0.78) + fw, f));
           float inWindow = win.x * win.y;
           float valid = step(0.5, id.y) * step(id.y, floors - 1.0) * step(0.9, vSize.y);
           vec3 detailed = mix(col, winCol, inWindow * valid);
-          vec3 averaged = mix(col, mix(glass, lightCol * 1.25, litRatio), 0.36 * valid);
+          // The far-away average must not depend on per-window randomness, or it aliases.
+          vec3 avgLight = vec3(1.0, 0.56, 0.2) * 0.75;
+          vec3 averaged = col + avgLight * litRatio * 0.34 * valid;
           col = mix(detailed, averaged, lod);
 
           // Cornice line at the top of the facade.
