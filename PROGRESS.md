@@ -7,9 +7,10 @@
 - Phase 3: city model (`src/core/builder.ts`), deterministic layout (`src/core/layout.ts`), format (`src/core/format.ts`), tests
 - Phase 4: CLI (`src/cli.ts`, zero deps), local server, Three.js viewer (`viewer/src`): instanced buildings with procedural window shader, bloom, fog, district plates, street lights, labels, hover tooltip, click-to-fly, search
 - Phase 5: time-lapse (`viewer/src/replay.ts`, `timeline.ts`, `walkers.ts`): play/pause (space), scrubber with growth curve + year marks, speed, contributor lights with trails, labels appear with their districts
+- Phase 6: export (`viewer/src/export.ts`): PNG 1920x1080 / 1080x1920 with title, district labels and watermark; 10s WebM time-lapse via MediaRecorder with slow orbit, date and watermark (720p fallback on slow GPUs)
 
 ## Next
-- Phase 6: export PNG (1920x1080, 1080x1920) and 10s WebM with watermark
+- Phase 7: remote repo cloning
 
 ## Known issues
 - none yet

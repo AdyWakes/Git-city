@@ -50,7 +50,7 @@ export class Stage {
       preserveDrawingBuffer: false,
     });
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.3;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setClearColor('#05060c');
 

@@ -46,7 +46,7 @@ export class Walkers {
     geo.setAttribute('color', new THREE.BufferAttribute(color, 3));
     geo.setAttribute('aAlpha', this.alphaAttr);
     geo.setAttribute('aSize', this.sizeAttr);
-    this.points = new THREE.Points(geo, createGlowMaterial({ size: 900 }));
+    this.points = new THREE.Points(geo, createGlowMaterial({ size: 600 }));
     this.points.frustumCulled = false;
     this.points.renderOrder = 2;
     for (let i = 0; i < SLOTS; i++) {

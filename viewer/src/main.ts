@@ -7,6 +7,7 @@ import { Search } from './search';
 import { Replay } from './replay';
 import { TimelineUI } from './timeline';
 import { Walkers } from './walkers';
+import { exportPng, exportVideo, videoSupported, type ExportHooks } from './export';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -18,6 +19,7 @@ export interface App {
   replay: Replay;
   timeline: TimelineUI;
   walkers: Walkers;
+  hooks: ExportHooks;
 }
 
 let app: App | null = null;
@@ -87,14 +89,14 @@ function start(data: CityData) {
   replay.seek(replay.ticks - 1);
   city.setState(replay.lines, replay.lots, true);
   const timeline = new TimelineUI(data, replay);
-  timeline.onSeek = (p, fromUser) => {
+  const seekTo = (p: number, follow: boolean) => {
     const tick = timeline.tickFor(p);
-    const follow = timeline.playing && !fromUser;
     if (replay.seek(tick, follow ? (b, a) => walkers.visit(a, b) : undefined)) {
       city.setState(replay.lines, replay.lots);
       labels.setActiveFrom(replay.lines);
     }
   };
+  timeline.onSeek = (p, fromUser) => seekTo(p, timeline.playing && !fromUser);
   timeline.onPlayToggle = (playing) => {
     if (playing) {
       stage.controls.autoRotate = true;
@@ -103,7 +105,7 @@ function start(data: CityData) {
   };
 
   const labels = new Labels($('labels'), data, city, stage, (d) => flyToDistrict(d));
-  app = { data, city, stage, labels, replay, timeline, walkers };
+  app = { data, city, stage, labels, replay, timeline, walkers, hooks: null as unknown as ExportHooks };
   renderHeader(data);
   renderLegend(data);
 
@@ -222,8 +224,14 @@ function start(data: CityData) {
   let last = performance.now();
   let running = true;
   stage.controls.autoRotate = true;
+  let exporting = false;
   const frame = (now: number) => {
     if (!running) return;
+    if (exporting) {
+      last = now;
+      requestAnimationFrame(frame);
+      return;
+    }
     const dt = Math.min(0.1, (now - last) / 1000);
     stage.trackFrame(now - last, now);
     last = now;
@@ -259,7 +267,47 @@ function start(data: CityData) {
   };
   requestAnimationFrame(frame);
 
+  // Export -------------------------------------------------------------------------------------
+  const hooks: ExportHooks = {
+    setExporting: (on) => {
+      exporting = on;
+      labels.visible = !on;
+      if (!on) labels.update();
+    },
+    seekTo: (p, follow) => {
+      seekTo(p, follow);
+      if (!exporting) timeline.setProgress(p);
+    },
+  };
+  const menu = $('export-menu');
+  const menuBtn = $('export-btn');
+  const closeMenu = () => menu.classList.remove('open');
+  const onMenu = (e: MouseEvent) => {
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  };
+  const onExport = async (e: MouseEvent) => {
+    const kind = (e.target as HTMLElement).closest<HTMLElement>('[data-export]')?.dataset.export;
+    if (!kind || !app) return;
+    closeMenu();
+    if (timeline.playing) timeline.toggle(false);
+    try {
+      if (kind === 'png-wide') await exportPng(app, hooks, 1920, 1080);
+      else if (kind === 'png-tall') await exportPng(app, hooks, 1080, 1920);
+      else if (kind === 'video') await exportVideo(app, hooks);
+    } catch (err) {
+      toast((err as Error).message);
+    }
+  };
+  menuBtn.addEventListener('click', onMenu);
+  menu.addEventListener('click', onExport);
+  document.addEventListener('click', closeMenu);
+  if (!videoSupported()) menu.querySelector<HTMLButtonElement>('[data-export="video"]')!.disabled = true;
+
   disposeApp = () => {
+    menuBtn.removeEventListener('click', onMenu);
+    menu.removeEventListener('click', onExport);
+    document.removeEventListener('click', closeMenu);
     running = false;
     canvas.removeEventListener('pointermove', onMove);
     canvas.removeEventListener('pointerdown', onDown);
@@ -271,6 +319,7 @@ function start(data: CityData) {
     stage.dispose();
     app = null;
   };
+  app.hooks = hooks;
   (window as unknown as { gitcity: unknown }).gitcity = app;
 }
 
@@ -293,6 +342,14 @@ function renderLegend(data: CityData) {
   $('legend').innerHTML = top
     .map(([l]) => `<div><i style="background:${data.langs[l].color}"></i>${esc(data.langs[l].name)}</div>`)
     .join('');
+}
+
+function toast(msg: string) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.append(t);
+  setTimeout(() => t.remove(), 4000);
 }
 
 export function esc(s: string): string {
