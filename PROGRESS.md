@@ -8,9 +8,10 @@
 - Phase 4: CLI (`src/cli.ts`, zero deps), local server, Three.js viewer (`viewer/src`): instanced buildings with procedural window shader, bloom, fog, district plates, street lights, labels, hover tooltip, click-to-fly, search
 - Phase 5: time-lapse (`viewer/src/replay.ts`, `timeline.ts`, `walkers.ts`): play/pause (space), scrubber with growth curve + year marks, speed, contributor lights with trails, labels appear with their districts
 - Phase 6: export (`viewer/src/export.ts`): PNG 1920x1080 / 1080x1920 with title, district labels and watermark; 10s WebM time-lapse via MediaRecorder with slow orbit, date and watermark (720p fallback on slow GPUs)
+- Phase 7: remote cloning (`src/node/clone.ts`): URLs, `git@` SSH, `github.com/x/y` and `owner/repo` shorthand; bare full clone with progress bar; temp dir removed right after parsing (`--keep` to retain)
 
 ## Next
-- Phase 7: remote repo cloning
+- Phase 8: demo site (GitHub Pages) with pre-generated cities
 
 ## Known issues
 - none yet

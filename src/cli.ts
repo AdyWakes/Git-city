@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ArgError, HELP, parseArgs, type CliArgs } from './node/args.js';
 import { buildCity } from './node/build.js';
+import { cloneRepo, remoteUrl, repoNameFromUrl, type Clone } from './node/clone.js';
 import { isGitRepo, repoRoot } from './node/git.js';
 import { openBrowser } from './node/open.js';
 import { serve } from './node/server.js';
@@ -40,17 +41,58 @@ export async function main(argv: string[]): Promise<void> {
 
   log(`\n  ${accent('■')} gitcity ${dim('v' + pkg.version)}\n`);
 
-  const dir = resolve(args.target);
-  if (!existsSync(dir)) throw new UserError(`No such folder: ${dir}`);
-  if (!(await isGitRepo(dir))) throw new UserError(`${dir} is not a git repository.`);
-  const root = await repoRoot(dir);
+  let root: string;
+  let clone: Clone | null = null;
+  let name: string | undefined;
+  let repoUrl: string | undefined;
+  const local = resolve(args.target);
+  const remote = existsSync(local) ? null : remoteUrl(args.target);
+  if (remote) {
+    name = repoNameFromUrl(remote);
+    repoUrl = /^https?:/.test(remote) ? remote.replace(/\.git$/, '') : undefined;
+    log(`  cloning ${remote}`);
+    let lastPhase = '';
+    try {
+      clone = await cloneRepo(remote, (p) => {
+        if (!isTTY) {
+          if (p.phase !== lastPhase) log(dim(`  ${p.phase.toLowerCase()}…`));
+        } else {
+          progress(p.phase.toLowerCase().padEnd(17).slice(0, 17), p.percent, 100);
+        }
+        lastPhase = p.phase;
+      });
+    } catch (e) {
+      throw new UserError(`Could not clone ${remote}: ${(e as Error).message}`);
+    }
+    if (isTTY) process.stderr.write('\n');
+    root = clone.dir;
+    const cleanup = () => {
+      if (!args.keep) clone?.cleanup();
+    };
+    process.once('exit', cleanup);
+    for (const sig of ['SIGINT', 'SIGTERM'] as const)
+      process.once(sig, () => {
+        cleanup();
+        process.exit(130);
+      });
+  } else {
+    if (!existsSync(local)) throw new UserError(`No such folder: ${local}`);
+    if (!(await isGitRepo(local))) throw new UserError(`${local} is not a git repository.`);
+    root = await repoRoot(local).catch(() => local);
+  }
 
   const started = Date.now();
   const city = await buildCity(root, {
     maxBuildings: args.maxBuildings,
+    name,
+    url: repoUrl,
     generator: `gitcity ${pkg.version}`,
-    onProgress: (d, t) => progress('reading history', d, t),
+    onProgress: (d, t) => progress('reading history  ', d, t),
   });
+  if (clone) {
+    if (args.keep) log(dim(`  clone kept at ${clone.dir}`));
+    else clone.cleanup();
+  }
   const s = city.stats;
   log(
     `  ${s.commits.toLocaleString('en-US')} commits, ${s.authors.toLocaleString('en-US')} authors, ${s.alive.toLocaleString('en-US')} files ` +
