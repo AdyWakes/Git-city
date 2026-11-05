@@ -4,14 +4,20 @@ import { Stage } from './stage';
 import { compact, fetchJson, fmt, fmtMonth, tryFetchJson, validate, type CityData, type DemoManifest } from './data';
 import { Labels } from './labels';
 import { Search } from './search';
+import { Replay } from './replay';
+import { TimelineUI } from './timeline';
+import { Walkers } from './walkers';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
-interface App {
+export interface App {
   data: CityData;
   city: CityView;
   stage: Stage;
   labels: Labels;
+  replay: Replay;
+  timeline: TimelineUI;
+  walkers: Walkers;
 }
 
 let app: App | null = null;
@@ -68,12 +74,36 @@ function start(data: CityData) {
   const city = new CityView(data);
   const stage = new Stage(canvas, city.radius);
   stage.scene.add(city.group);
-  stage.onResize = (w, h) => city.setViewport(w, h);
+  const walkers = new Walkers(city);
+  stage.scene.add(walkers.points);
+  stage.onResize = (w, h) => {
+    city.setViewport(w, h);
+    walkers.setViewport(h);
+  };
   stage.resize();
-  city.setFinal(true);
+
+  // Time-lapse ---------------------------------------------------------------------------------
+  const replay = new Replay(data);
+  replay.seek(replay.ticks - 1);
+  city.setState(replay.lines, replay.lots, true);
+  const timeline = new TimelineUI(data, replay);
+  timeline.onSeek = (p, fromUser) => {
+    const tick = timeline.tickFor(p);
+    const follow = timeline.playing && !fromUser;
+    if (replay.seek(tick, follow ? (b, a) => walkers.visit(a, b) : undefined)) {
+      city.setState(replay.lines, replay.lots);
+      labels.setActiveFrom(replay.lines);
+    }
+  };
+  timeline.onPlayToggle = (playing) => {
+    if (playing) {
+      stage.controls.autoRotate = true;
+      if (timeline.progress === 0) walkers.clear();
+    }
+  };
 
   const labels = new Labels($('labels'), data, city, stage, (d) => flyToDistrict(d));
-  app = { data, city, stage, labels };
+  app = { data, city, stage, labels, replay, timeline, walkers };
   renderHeader(data);
   renderLegend(data);
 
@@ -199,8 +229,10 @@ function start(data: CityData) {
     last = now;
 
     if (!stage.flying && now - idleSince > 25000 && !downAt) stage.controls.autoRotate = true;
+    timeline.advance(dt);
     stage.update(dt);
     city.update(dt, now / 1000);
+    walkers.update(dt);
 
     if (pointer && !stage.flying) {
       const { bi, di } = pickAt(pointer.x, pointer.y);
@@ -234,11 +266,12 @@ function start(data: CityData) {
     canvas.removeEventListener('pointerup', onUp);
     canvas.removeEventListener('pointerleave', onLeave);
     search.dispose();
+    timeline.dispose();
     labels.dispose();
     stage.dispose();
     app = null;
   };
-  (window as unknown as { gitcity: unknown }).gitcity = { data, city, stage };
+  (window as unknown as { gitcity: unknown }).gitcity = app;
 }
 
 function renderHeader(data: CityData) {

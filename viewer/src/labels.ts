@@ -13,6 +13,7 @@ export class Labels {
   private v = new THREE.Vector3();
   private boxes: { x0: number; y0: number; x1: number; y1: number }[] = [];
   visible = true;
+  private active: Uint8Array;
 
   constructor(
     private root: HTMLElement,
@@ -22,6 +23,7 @@ export class Labels {
     onClick: (district: number) => void,
   ) {
     root.innerHTML = '';
+    this.active = new Uint8Array(data.districts.length).fill(1);
     const tallest = new Float64Array(data.districts.length);
     data.b.district.forEach((d, i) => {
       if (data.b.died[i] === -1) tallest[d] = Math.max(tallest[d], city.heightOf(data.b.lines[i]));
@@ -52,7 +54,7 @@ export class Labels {
       const p = this.v.copy(this.anchors[di]);
       const dist = p.distanceTo(cam.position);
       p.project(cam);
-      const onScreen = this.visible && p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1;
+      const onScreen = this.visible && this.active[di] === 1 && p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1;
       if (!onScreen || shown >= MAX_LABELS) {
         el.style.opacity = '0';
         el.style.visibility = 'hidden';
@@ -76,6 +78,13 @@ export class Labels {
       el.style.opacity = String(fade);
       el.style.transform = `translate(${x - lw / 2}px, ${y - 22}px)`;
     }
+  }
+
+  /** Only label districts that have at least one building at the current point in time. */
+  setActiveFrom(lines: ArrayLike<number>): void {
+    this.active.fill(0);
+    const d = this.data.b.district;
+    for (let i = 0; i < lines.length; i++) if (lines[i] >= 0) this.active[d[i]] = 1;
   }
 
   dispose(): void {
