@@ -5,3 +5,4 @@ demo-site/
 .DS_Store
 .gitcity-cache/
 viewer/*.json
+*.tgz
