@@ -1,3 +1,61 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>gitcity</title></head>
-<body><script type="module" src="./src/main.ts"></script></body></html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>gitcity</title>
+    <meta name="description" content="Your git history as a 3D night city." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305060c'/%3E%3Crect x='6' y='14' width='5' height='12' fill='%235b7cfa'/%3E%3Crect x='13' y='6' width='6' height='20' fill='%23ff4f8b'/%3E%3Crect x='21' y='11' width='5' height='15' fill='%23e0a43a'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <canvas id="c" tabindex="0" aria-label="3D city of the repository"></canvas>
+    <div id="labels"></div>
+
+    <header class="brand">
+      <a class="mark" href="https://github.com/AdyWakes/Git-city" target="_blank" rel="noopener"><i></i>gitcity</a>
+      <h1 id="repo-name">&nbsp;</h1>
+      <p id="repo-stats">&nbsp;</p>
+      <nav class="demo-switch" id="demo-switch" hidden></nav>
+    </header>
+
+    <div class="tools">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input id="search" type="search" placeholder="Find a file" autocomplete="off" spellcheck="false" aria-label="Find a file" />
+        <ul class="results" id="results" role="listbox"></ul>
+      </div>
+      <div class="menu" id="export-menu">
+        <button class="btn" id="export-btn" aria-haspopup="true">Share</button>
+        <div class="menu-list" role="menu">
+          <button data-export="png-wide" role="menuitem">Image <span>1920 × 1080</span></button>
+          <button data-export="png-tall" role="menuitem">Story image <span>1080 × 1920</span></button>
+          <button data-export="video" role="menuitem">Time-lapse video <span>10 s WebM</span></button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="legend" id="legend"></aside>
+    <div class="hint" id="hint">Drag to orbit · scroll to zoom · click a district to fly there</div>
+
+    <footer class="timeline">
+      <button class="play" id="play" aria-label="Play time-lapse">
+        <svg viewBox="0 0 24 24" fill="currentColor" id="play-icon"><path d="M7 4.5v15l13-7.5z" /></svg>
+      </button>
+      <div class="date"><strong id="date">&nbsp;</strong><span id="date-sub">&nbsp;</span></div>
+      <div class="scrub" id="scrub" role="slider" aria-label="Timeline" tabindex="0">
+        <canvas id="scrub-canvas"></canvas>
+        <div class="head" id="scrub-head"></div>
+      </div>
+      <div class="speed" id="speed">
+        <button data-speed="0.5">½×</button>
+        <button data-speed="1" aria-pressed="true">1×</button>
+        <button data-speed="3">3×</button>
+      </div>
+    </footer>
+
+    <div id="tip"></div>
+    <div id="loading"><p id="loading-text">Loading city…</p></div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
