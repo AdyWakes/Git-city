@@ -145,6 +145,13 @@ export class Stage {
 
   dispose(): void {
     window.removeEventListener('resize', this.onWindowResize);
+    this.scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+      if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
+      else mat?.dispose();
+    });
     this.controls.dispose();
     this.composer.dispose();
     this.renderer.dispose();

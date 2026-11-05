@@ -2,7 +2,7 @@
 
 **Your git history as a 3D night city: every file a building, every commit a light coming on.**
 
-![facebook/react as a gitcity](docs/screenshot-react.png)
+![facebook/react as a gitcity](docs/screenshot-react.jpg)
 
 <!-- GIF placeholder: replace with a short screen recording of the time-lapse (docs/timelapse.gif) -->
 
@@ -42,6 +42,11 @@ Requires Node 20+ and git.
 - **Find a file** with the search box (press `/`).
 - **Play** (or press space) to grow the city from the first commit to today. Contributors appear as small lights flying to the files they change. Drag the timeline to scrub.
 - **Share** exports a 1920×1080 or 1080×1920 PNG, or a 10-second time-lapse video (WebM).
+
+| | |
+| --- | --- |
+| ![vuejs/core](docs/screenshot-vue.jpg) | ![redis/redis mid time-lapse](docs/timelapse-redis.jpg) |
+| Vue core, close up | Redis in December 2016, mid time-lapse: contributor lights over `src` |
 
 ## How the mapping works
 

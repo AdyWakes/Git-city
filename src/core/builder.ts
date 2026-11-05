@@ -306,7 +306,11 @@ export class CityBuilder {
 
     // Fill tick times for empty buckets so the timeline never shows 1970.
     const tickTime = [...this.tickTime];
-    for (let i = 0; i < tickTime.length; i++) if (!tickTime[i]) tickTime[i] = i > 0 ? tickTime[i - 1] : this.first;
+    // Also keep it monotonic: author dates of rebased/cherry-picked commits can go backwards.
+    for (let i = 0; i < tickTime.length; i++) {
+      if (!tickTime[i]) tickTime[i] = i > 0 ? tickTime[i - 1] : this.first;
+      else if (i > 0 && tickTime[i] < tickTime[i - 1]) tickTime[i] = tickTime[i - 1];
+    }
 
     let totalLines = 0;
     for (const f of aliveFiles) totalLines += f.lines;

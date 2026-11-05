@@ -68,6 +68,12 @@ describe('CityBuilder', () => {
     for (let i = 4; i < city.ev.length; i += 4) expect(city.ev[i]).toBeGreaterThanOrEqual(city.ev[i - 4]);
   });
 
+  test('timeline dates never go backwards', () => {
+    const b = new CityBuilder({ totalCommits: 4, maxTicks: 4 });
+    for (const t of [100, 300, 200, 400]) b.addCommit(C(t, [ch('M', 'a.txt', 1)]));
+    expect(b.finalize({ repo: { name: 't' } }).ticks.t).toEqual([100, 300, 300, 400]);
+  });
+
   test('monorepo container folders are split into districts', () => {
     const b = new CityBuilder({ totalCommits: 1 });
     const changes = [];
