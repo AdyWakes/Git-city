@@ -1,0 +1,6 @@
+node_modules/
+dist/
+demo-site/
+*.log
+.DS_Store
+.gitcity-cache/

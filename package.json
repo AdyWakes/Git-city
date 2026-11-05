@@ -1,0 +1,54 @@
+{
+  "name": "gitcity",
+  "version": "0.1.0",
+  "description": "Turn any git repo's history into an explorable 3D night city you can share.",
+  "type": "module",
+  "bin": {
+    "gitcity": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build:cli && npm run build:viewer",
+    "build:cli": "tsc -p tsconfig.json && node scripts/chmod-bin.mjs",
+    "build:viewer": "vite build",
+    "dev:viewer": "vite",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p viewer/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo:data": "node scripts/build-demo-data.mjs",
+    "demo:build": "node scripts/build-demo-site.mjs",
+    "synth": "node scripts/synth-repo.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "git",
+    "visualization",
+    "3d",
+    "city",
+    "threejs",
+    "cli",
+    "history",
+    "timelapse"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdyWakes/Git-city.git"
+  },
+  "homepage": "https://adywakes.github.io/Git-city/",
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/three": "^0.170.0",
+    "three": "^0.170.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  }
+}
