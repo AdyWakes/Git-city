@@ -10,9 +10,10 @@
 - Phase 6: export (`viewer/src/export.ts`): PNG 1920x1080 / 1080x1920 with title, district labels and watermark; 10s WebM time-lapse via MediaRecorder with slow orbit, date and watermark (720p fallback on slow GPUs)
 - Phase 7: remote cloning (`src/node/clone.ts`): URLs, `git@` SSH, `github.com/x/y` and `owner/repo` shorthand; bare full clone with progress bar; temp dir removed right after parsing (`--keep` to retain)
 - Phase 8: demo site: `demo/data/*.json` (react, vue core, redis, flask; 5000-building cap), `demo/manifest.json`, `scripts/build-demo-data.mjs`, `scripts/build-demo-site.mjs`, `.github/workflows/pages.yml` (deploys on push to main; manual run can regenerate data). Synthetic repo generator `scripts/synth-repo.mjs`
+- Phase 9: README (pitch, demo link, usage, mapping, performance, architecture, contributing, 5 good first issues), CONTRIBUTING.md
 
 ## Next
-- Phase 9: README
+- Self-review: performance, polish, edge cases; screenshots into docs/; MORNING.md
 
 ## Known issues
 - none yet

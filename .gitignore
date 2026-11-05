@@ -4,3 +4,4 @@ demo-site/
 *.log
 .DS_Store
 .gitcity-cache/
+viewer/*.json
